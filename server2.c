@@ -83,7 +83,7 @@ int main(void){
 
     addr_len=sizeof their_addr;
 
-    if((numbytes=recvform(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
+    if((numbytes=recvfrom(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,sizeof(struct sockaddr_storage)))==-1){
         perror("recvfrom");
         exit(1);
     }
@@ -92,7 +92,7 @@ int main(void){
 
     buff=reverse(buff);
 
-    if((numbytes=sendto(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
+    if((numbytes=sendto(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,sizeof(struct sockaddr_storage)))==-1){
         perror("send");
         exit(1);
     }

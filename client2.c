@@ -58,14 +58,14 @@ int main(int argc,char *argv[]){
     buff[size-1]='\0';
 
 
-    if((numbytes=sendto(sockfd,buff,size,0,p->ai_addr,p->ai_addrlen))==-1){
+    if((numbytes=sendto(sockfd,buff,size,0,(struct sockaddr *)&their_addr,sizeof(struct sockaddr_storage)))==-1){
         perror("sendto");
         exit(1);
     }
     
     memset(&buff,0,sizeof(buff));
 
-    if((numbytes=recvform(sockfd,buff,size,0,p->ai_addr,p->ai_addrlen))==-1){
+    if((numbytes=recvfrom(sockfd,buff,size,0,(struct sockaddr *)&their_addr,sizeof(struct sockaddr_storage)))==-1){
         perror("recv");
         exit(1);
     }
