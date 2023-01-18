@@ -28,15 +28,16 @@ int betriebssystem = 2;
 #define backlog 1
 #define MAXDATASIZE 100
 
-char* reverse(char *s){
-    char buff[MAXDATASIZE];
-    int i=0;
+void reverse(char *s){
+    int i=0,j=0;
     while(s[i]!='\0')i++;
-    for(int j=i-1;j>=0;j--){
-        buff[j+1]=s[i];
+    i--;
+    while(j<i){
+    	char c=s[i];
+    	s[i]=s[j];
+    	s[j]=c;
+    	j++,i--;
     }
-    buff[0]='\0';
-    return buff;
 }
 
 int main(void){
@@ -115,9 +116,9 @@ int main(void){
     }
 
 
-    printf("server :received %s\n",buff);
-
-    buff=reverse(buff);
+    printf("server :received-- '%s'\n",buff);
+	
+    reverse(buff);
 
     if((numbytes=send(newfd,buff,MAXDATASIZE,0))==-1){
         perror("send");

@@ -71,7 +71,7 @@ int main(int argc,char *argv[]){
 
     memset(&buff,0,sizeof(buff));
 
-    printf("input the string from client");
+    printf("input the string from client\n");
 
     while((buff[size++]=getchar())!='\n');
     buff[size-1]='\0';
@@ -91,7 +91,7 @@ int main(int argc,char *argv[]){
 
     buff[numbytes] = '\0';
 
-    printf("client : received %s\n",buff);
+    printf("client : received-- '%s'\n",buff);
 
     close(sockfd);
 
