@@ -9,54 +9,37 @@
 #include <netdb.h>
 #include <sys/types.h>
 
-#define port "2035"
+#define PORT "3490"
 #define MAXDATASIZE 100
-
-void *get_in_addr(struct sockaddr *sa){
-	if(sa->sa_family==AF_INET){
-		return &(((struct sockaddr_in*)sa)->sin_addr);
-	}
-	return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
+#define BACKLOG 10
 
 int main(int argc,char *argv[]){
-
-
-	printf("yes");
-	
     int sockfd;
     struct addrinfo hints;
     struct addrinfo *res,*p;
-
-
 
     memset(&hints,0,sizeof hints);
     hints.ai_family=AF_UNSPEC;
     hints.ai_socktype=SOCK_STREAM;
 
     int status;
-    
-    
 
-    if((status=getaddrinfo("127.0.0.1","2035",&hints,&res))!=0){
+    if((status=getaddrinfo("127.0.0.1","3490",&hints,&res))!=0){
         fprintf(stderr,"getaddrinfo:%s\n",gai_strerror(status));
         return 1;
     }
-    
-    
 
     for(p=res;p!=NULL;p=p->ai_next){
         if((sockfd=socket(p->ai_family,p->ai_socktype,p->ai_protocol))==-1){
             perror("client : socket");
             continue;
         }
-
-        if(connect(sockfd,p->ai_addr,p->ai_addrlen)==-1){
-            close(sockfd);
-            perror("client : connect");
-            continue;
-        }
+        
+       	if(connect(sockfd,p->ai_addr,p->ai_addrlen)==-1){
+       		close(sockfd);
+       		perror("client:connect");
+       	}
+       	
         
         break;
     }
@@ -69,8 +52,7 @@ int main(int argc,char *argv[]){
     freeaddrinfo(res);
 
     
-    
-    while(1){
+    //while(1){
     
     	    char buff[MAXDATASIZE];
 	    int numbytes,size=0;
@@ -82,14 +64,16 @@ int main(int argc,char *argv[]){
 	    buff[size-1]='\0';
 
 
-	    if((numbytes=send(sockfd,buff,MAXDATASIZE,0))==-1){
+	    if((numbytes=send(sockfd,buff,size,0))==-1){
 		perror("send");
 		exit(1);
 	    }
 	    
 	    memset(&buff,0,sizeof(buff));
+	    
+	    //printf("sent");
 
-	    if((numbytes=recv(sockfd,buff,MAXDATASIZE,0))==-1){
+	    if((numbytes=recv(sockfd,buff,MAXDATASIZE-1,0))==-1){
 		perror("recv");
 		exit(1);
 	    }
@@ -98,7 +82,7 @@ int main(int argc,char *argv[]){
 
 	    printf("%s\n",buff);
 	    
-	}
+	//}
 
     close(sockfd);
 

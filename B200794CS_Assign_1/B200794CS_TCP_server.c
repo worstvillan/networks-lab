@@ -12,11 +12,11 @@
 
 #define port "3490"
 #define MAXDATASIZE 100
+#define BACKLOG 10
 
 void reverse(char *s){
     int i=0,j=0;
-    while(s[i]!='\0')i++;
-    i--;
+    i=strlen(s)-1;
     while(j<i){
     	char c=s[i];
     	s[i]=s[j];
@@ -73,20 +73,19 @@ int main(void){
 
     printf("listening\n");
    
-   while(1){
-   
-   if(listen(sockfd,10)==-1){
+    if(listen(sockfd,BACKLOG)==-1){
 	perror("listen");
 	exit(1);
-   }
+    }
    
    
     
-    
+    //printf("yes");
 	    
 	    
 	    struct sockaddr_storage their_addr;
-		    socklen_t sin_size;
+            socklen_t sin_size;
+            sin_size=sizeof their_addr;
 
 		    newfd=accept(sockfd,(struct sockaddr *)&their_addr,&sin_size);
 
@@ -94,40 +93,44 @@ int main(void){
 			perror("accept");
 			return 0;
 		    }
+		    
+		    //printf("yes");
 
 		    
 		    
-		while(1){    
+		//while(1){    
 	    
 	    
 	    
-	    		char buff[MAXDATASIZE];
-			    int numbytes,size=0;
+	    	   char buff[MAXDATASIZE];
+	           int numbytes,size=0;
 
 		    
-			memset(&buff,0,sizeof(buff));
+	           memset(&buff,0,sizeof(buff));
 
-		    if((numbytes=recv(newfd,buff,MAXDATASIZE,0))==-1){
+		    if((numbytes=recv(newfd,buff,MAXDATASIZE-1,0))==-1){
 			perror("recv");
 			exit(1);
 		    }
+		    
+		    printf("%s\n",buff);
 
-			if(strcmp(buff,"exit")==0)break;
 		    reverse(buff);
 		    
-			int len=strlen(buff);
+		    
+		    
+		    int len=strlen(buff);
 
 		    if((numbytes=send(newfd,buff,len,0))==-1){
 			perror("send");
 			exit(1);
 		    }
 
+		//}  
 		    
-		    
-	}
 		
 		close(newfd);
 	
-}
+
     return 0;
 }
