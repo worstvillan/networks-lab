@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define PORT "9034"
+#define PORT "2035"
 
 void* get_in_addr(struct sockaddr *sa){
     if(sa->sa_family==AF_INET){
@@ -43,7 +43,7 @@ int main(){
     FD_ZERO(&read_fds);
 
     memset(&hints,0,sizeof(hints));
-    hints.ai_family=AI_UNSPEC;
+    hints.ai_family=AF_UNSPEC;
     hints.ai_socktype=SOCK_STREAM;
 
     if((rv=getaddrinfo(NULL,PORT,&hints,&ai))!=0){
@@ -54,6 +54,7 @@ int main(){
     }
 
     for(p=ai;p!=NULL;p=p->ai_next){
+    
         listener=socket(p->ai_family,p->ai_socktype,p->ai_protocol);
         if(listener<0)continue;
 
@@ -83,34 +84,34 @@ int main(){
 
     FD_SET(listener,&master);
 
-    fdmax=listener;
+    fd_max=listener;
 
     while(1){
         read_fds=master;
 
-        if(select(fdmax,&read_fds,NULL,NULL,NULL)==-1){
+        if(select(fd_max,&read_fds,NULL,NULL,NULL)==-1){
             perror("select");
             exit(4);
         }
 
-        for(i=0;i<=fdmax;i++){
+        for(i=0;i<=fd_max;i++){
             if(FD_ISSET(i,&read_fds)){
                 if(i==listener){
-                    addrlen=sizeof(remoteaddr);
-                    newfd=accept(listener,(struct sockaddr*)&remoteaddr,&addrlen);
+                    addr_len=sizeof(remoteaddr);
+                    new_fd=accept(listener,(struct sockaddr*)&remoteaddr,&addr_len);
 
                     if(new_fd==-1){
                         perror("accept");
                     }
                     else{
-                        FD_SET(newfd,&master);
+                        FD_SET(new_fd,&master);
 
-                        if(new_fd>fdmax){
-                            fdmax=new_fd;
+                        if(new_fd>fd_max){
+                            fd_max=new_fd;
                         }
 
                         printf("newconnection from %s on socket %d\n",inet_ntop(remoteaddr.ss_family,
-                            get_in_addr((struct sockaddr*)&remoteaddr),remoteIP,INET6_ADDRSTRLEN),newfd);
+                            get_in_addr((struct sockaddr*)&remoteaddr),remote,INET6_ADDRSTRLEN),new_fd);
 
                         
                     }

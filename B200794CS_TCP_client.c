@@ -9,10 +9,22 @@
 #include <netdb.h>
 #include <sys/types.h>
 
-#define port "3490"
+#define port "2035"
 #define MAXDATASIZE 100
 
+void *get_in_addr(struct sockaddr *sa){
+	if(sa->sa_family==AF_INET){
+		return &(((struct sockaddr_in*)sa)->sin_addr);
+	}
+	return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+
 int main(int argc,char *argv[]){
+
+
+	printf("yes");
+	
     int sockfd;
     struct addrinfo hints;
     struct addrinfo *res,*p;
@@ -24,11 +36,15 @@ int main(int argc,char *argv[]){
     hints.ai_socktype=SOCK_STREAM;
 
     int status;
+    
+    
 
-    if((status=getaddrinfo("127.0.0.1","3490",&hints,&res))!=0){
+    if((status=getaddrinfo("127.0.0.1","2035",&hints,&res))!=0){
         fprintf(stderr,"getaddrinfo:%s\n",gai_strerror(status));
         return 1;
     }
+    
+    
 
     for(p=res;p!=NULL;p=p->ai_next){
         if((sockfd=socket(p->ai_family,p->ai_socktype,p->ai_protocol))==-1){
