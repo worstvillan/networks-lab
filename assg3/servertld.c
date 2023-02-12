@@ -80,7 +80,7 @@ int main(void){
 
     for(p2=res2;p2!=NULL;p2=p2->ai_next){
 
-        if((sockfd=socket(p2->ai_family,p2->ai_socktype,p2->ai_protocol))==-1){
+        if((sockfd2=socket(p2->ai_family,p2->ai_socktype,p2->ai_protocol))==-1){
             perror("server : socket");
             continue;
         }
@@ -94,42 +94,52 @@ int main(void){
         fprintf(stderr,"server : failed to bind\n");
         exit(1);
     }
-
-    char buff[MAXDATASIZE];
-    int numbytes,size=0;
-
-    memset(&buff,0,sizeof(buff));
-
-    addr_len=sizeof (their_addr);
-
-    if((numbytes=recvfrom(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
-        perror("recvfrom");
-        exit(1);
-    }
-
-    buff[numbytes]='\0';
-
-    if((numbytes=sendto(sockfd2,buff,strlen(buff),0,p2->ai_addr,p2->addr_len))==-1){
-        perror("send");
-        exit(1);
-    }
-
-    memset(buff,0,sizeof(buff));
-
-    if((numbytes=recvfrom(sockfd2,buff,strlen(buff),0,p2->ai_addr,p2->addr_len))==-1){
-        perror("send");
-        exit(1);
-    }
-
-    buff[numbytes]='\0';
     
-    close(sockfd2);
+    while(1){
 
-    if((numbytes=sendto(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
-        perror("recvfrom");
-        exit(1);
+	    char buff[MAXDATASIZE];
+	    int numbytes,size=0;
+
+	    memset(&buff,0,sizeof(buff));
+
+	    addr_len=sizeof (their_addr);
+
+	    if((numbytes=recvfrom(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
+		perror("recvfrom");
+		exit(1);
+	    }
+
+	    buff[numbytes]='\0';
+	    
+	    printf("ip address of the %s :",buff);
+
+	    if((numbytes=sendto(sockfd2,buff,strlen(buff),0,p2->ai_addr,p2->ai_addrlen))==-1){
+		perror("send");
+		exit(1);
+	    }
+
+	    memset(&buff,0,sizeof(buff));
+
+	    if((numbytes=recvfrom(sockfd2,buff,MAXDATASIZE-1,0,p2->ai_addr,&p2->ai_addrlen))==-1){
+		perror("send");
+		exit(1);
+	    }
+	    
+	    printf(" %s\n",buff);
+
+	    buff[numbytes]='\0';
+	    
+	    
+	    
+	    
+
+	    if((numbytes=sendto(sockfd,buff,strlen(buff),0,(struct sockaddr *)&their_addr,addr_len))==-1){
+		perror("recvfrom");
+		exit(1);
+	    }
     }
-
+     
+    close(sockfd2);
     close(sockfd);
 
     return 0;

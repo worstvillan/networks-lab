@@ -62,8 +62,6 @@ int main(void){
     int sockfd2;
     struct addrinfo hints2;
     struct addrinfo *res2,*p2;
-     struct sockaddr_storage their_addr2;
-    socklen_t addr_len2;
 
     memset(&hints2,0,sizeof hints2);
     hints2.ai_family=AF_UNSPEC;

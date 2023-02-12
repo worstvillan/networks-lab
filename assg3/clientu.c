@@ -9,7 +9,6 @@
 #include <netdb.h>
 #include <sys/types.h>
 
-#define PORT "3490"
 #define MAXDATASIZE 100
 
 int main(int argc,char *argv[]){
@@ -43,7 +42,9 @@ int main(int argc,char *argv[]){
     }
 
     freeaddrinfo(res);
-
+    
+    while(1)
+{
     char buff[MAXDATASIZE];
     int numbytes,size=0;
 
@@ -71,6 +72,9 @@ int main(int argc,char *argv[]){
     buff[numbytes] = '\0';
 
     printf("%s\n",buff);
+    
+    memset(&buff,0,sizeof(buff));
+}
 
     close(sockfd);
 

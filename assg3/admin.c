@@ -12,13 +12,13 @@
 
 #define backlog 1
 #define MAXDATASIZE 100
-#define MAX_IP_ADDR 20
+#define MAX_IP_ADDR 10
 
 int count=0;
 
 struct addr{
-    char* name;
-    char* ip_addr;
+    char name[100];
+    char ip_addr[100];
 }x[MAX_IP_ADDR];
 
 void add(char *name,char *ip_addr){
@@ -33,15 +33,6 @@ void add(char *name,char *ip_addr){
     count++;
 }
 
-char* lookup(char *name){
-    for(int i=0;i<MAX_IP_ADDR;i++){
-        if(strcmp(x[i].name,name)==0){
-            return x[i].ip_addr;
-        }
-    }
-
-    return NULL;
-}
 
 int main(void){
 
@@ -56,6 +47,7 @@ int main(void){
     add("www.levi.com","198.11.176.250");
     add("www.doflamingo.com","45.79.41.19");
 
+    
     int sockfd,newfd;
     struct addrinfo hints;
     struct addrinfo *res,*p;
@@ -98,43 +90,64 @@ int main(void){
         fprintf(stderr,"server : failed to bind\n");
         exit(1);
     }
+    
+    while(1){
 
-    char buff[MAXDATASIZE];
-    int numbytes,size=0;
+	    char buff[MAXDATASIZE];
+	    int numbytes,size=0;
 
-    memset(&buff,0,sizeof(buff));
+	    memset(&buff,0,sizeof(buff));
 
-    addr_len=sizeof (their_addr);
+	    addr_len=sizeof (their_addr);
 
-    if((numbytes=recvfrom(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
-        perror("recvfrom");
-        exit(1);
-    }
+	    if((numbytes=recvfrom(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
+		perror("recvfrom");
+		exit(1);
+	    }
 
-    buff[numbytes]='\0';
+	    buff[numbytes]='\0';
 
-    printf("received request from tld server for ip = %s\n",buff);
+	    printf("received request from tld server for ip = %s : ",buff);
 
 
-    char buff1[MAX_DATA_SIZE];
-    strcat(buff1,"www.");
-    strcat(buff1,buff);
+	    char buff1[MAXDATASIZE];
+	    memset(&buff1,0,sizeof(buff1));
+	    
+	    strcat(buff1,buff);
 
-    char* ip_address = lookup(buff1);
+	    char ip_address[100];
+	    int flag=0;
+	    
+	    for(int i=0;i<MAX_IP_ADDR;i++){
+	    
+		if(strcmp(x[i].name,buff1)==0){
+		
+		    
+		    strcpy(ip_address,x[i].ip_addr);
+		    flag=1;
+		    break;
+		    
+		}
+		
+	    }
+	    
+	    printf("ip address is %s\n",ip_address);
 
-    if(ip_address!=NULL){
-        if((numbytes = sendto(sockfd, ip_address, strlen(ip_address), 0, (struct sockaddr*)&their_addr, addr_len))==-1){
-            perror("error in sending to tld server\n");
-            exit(1);
-        }
-    }
-    else{
-        memset(buff1,0,sizeof(buff1));
-        strcat(buff1,"address could not be located");
-        if((numbytes = sendto(sockfd, buff1, strlen(buff1), 0, (struct sockaddr*)&their_addr, addr_len))==-1){
-            perror("error in sending to tld server\n");
-            exit(1);
-        }
+	    if(flag==1){
+		if((numbytes = sendto(sockfd, ip_address, strlen(ip_address), 0, (struct sockaddr*)&their_addr, addr_len))==-1){
+		    perror("error in sending to tld server\n");
+		    exit(1);
+		}
+	    }
+	    else{
+		memset(buff1,0,sizeof(buff1));
+		strcat(buff1,"address could not be located");
+		if((numbytes = sendto(sockfd, buff1, strlen(buff1), 0, (struct sockaddr*)&their_addr, addr_len))==-1){
+		    perror("error in sending to tld server\n");
+		    exit(1);
+		}
+	    }
+    
     }
 
     close(sockfd);

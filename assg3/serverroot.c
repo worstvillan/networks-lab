@@ -11,19 +11,18 @@
 
 #define backlog 1
 #define MAXDATASIZE 100
-#define MAXDATASIZE 100
 #define MAX_IP_ADDR 20
 
 int count=0;
 
 struct addr{
-    char* tld;
-    char* ip_addr;
+    char tld[100];
+    char ip_addr[100];
 }x[MAX_IP_ADDR];
 
 void add(char *tld,char *ip_addr){
 
-    if(count>MAX_IP_ADDR){
+    if(count>=MAX_IP_ADDR){
         printf("error : tld address reach is exceeded");
         return;
     }
@@ -93,8 +92,6 @@ int main(void){
     int sockfd2;
     struct addrinfo hints2;
     struct addrinfo *res2,*p2;
-     struct sockaddr_storage their_addr2;
-    socklen_t addr_len2;
 
     memset(&hints2,0,sizeof hints2);
     hints2.ai_family=AF_UNSPEC;
@@ -104,7 +101,7 @@ int main(void){
     int status2;
 
     if((status2=getaddrinfo("127.0.0.3","3492",&hints2,&res2))!=0){
-        fprintf(stderr ,"getadderinfo: %s\n", gai_strerror(status));
+        fprintf(stderr ,"getadderinfo: %s\n", gai_strerror(status2));
         return 1;
     }
 
@@ -112,7 +109,7 @@ int main(void){
 
     for(p2=res2;p2!=NULL;p2=p2->ai_next){
 
-        if((sockfd=socket(p2->ai_family,p2->ai_socktype,p2->ai_protocol))==-1){
+        if((sockfd2=socket(p2->ai_family,p2->ai_socktype,p2->ai_protocol))==-1){
             perror("server : socket");
             continue;
         }
@@ -126,6 +123,8 @@ int main(void){
         fprintf(stderr,"server : failed to bind\n");
         exit(1);
     }
+    
+    while(1){
 
     char buff[MAXDATASIZE];
     int numbytes,size=0;
@@ -140,45 +139,56 @@ int main(void){
     }
 
     buff[numbytes]='\0';
+    
+    
 
-    char tld[5];
-    tld[3]=buff[numbytes-1];
-    tld[2]=buff[numbytes-2];
-    tld[1]=buff[numbytes-3];
-    tld[0]='.';
-    tld[4]='\n';
+    char tld1[5];
+    tld1[0]='.';
+    tld1[1]=buff[numbytes-3];
+    tld1[2]=buff[numbytes-2];
+    tld1[3]=buff[numbytes-1];
+    tld1[4]='\0';
 
-    char* ip_addr=lookup(tld);
+    char* ip_addr=lookup(tld1);
 
     if(ip_addr!=NULL){
 
         printf("tld server ip address for .com : %s\n",ip_addr);
+        
+        printf("ip address for %s :",buff);
 
-        if((numbytes=sendto(sockfd2,buff,strlen(buff),0,p2->ai_addr,p2->addr_len))==-1){
+        if((numbytes=sendto(sockfd2,buff,strlen(buff),0,p2->ai_addr,p2->ai_addrlen))==-1){
             perror("send");
             exit(1);
         }
 
         memset(buff,0,sizeof(buff));
 
-        if((numbytes=recvfrom(sockfd2,buff,strlen(buff),0,p2->ai_addr,p2->addr_len))==-1){
+        if((numbytes=recvfrom(sockfd2,buff,MAXDATASIZE-1,0,p2->ai_addr,&p2->ai_addrlen))==-1){
             perror("recvfrom");
             exit(1);
         }
 
+	
         buff[numbytes]='\0';
+	printf(" %s\n",buff);
 
-        close(sockfd2);
-
-        if((numbytes=sendto(sockfd,buff,MAXDATASIZE-1,0,(struct sockaddr *)&their_addr,&addr_len))==-1){
-            perror("send");
-            exit(1);
-        }
-        close(sockfd1);
+        if((numbytes=sendto(sockfd,buff,strlen(buff),0,(struct sockaddr *)&their_addr,addr_len))==-1){
+        	perror("recvfrom");
+        	exit(1);
+    	}
+        
+        
+        
     }
     else{
         printf("error in finding tld\n");
     }
-
+    
+    
+    }
+    
+    close(sockfd2);
+    close(sockfd);
     return 0;
 }
